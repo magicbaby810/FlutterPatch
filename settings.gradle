@@ -4,3 +4,9 @@ include ':flutterpatch'
 
 
 
+setBinding(new Binding([gradle: this]))
+evaluate(new File(settingsDir.parentFile, '../../workspace_studio/HotfixFlutter/flutterhotfixmodule/.android/include_flutter.groovy'))
+include ':flutterhotfixmodule'
+project(':flutterhotfixmodule').projectDir = new File('../flutterhotfixmodule')
+
+
