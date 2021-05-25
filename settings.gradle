@@ -1,12 +1,14 @@
 rootProject.name = "FlutterPatch"
 include ':app'
+setBinding(new Binding([gradle: this]))
+evaluate(new File(
+  settingsDir,
+  'build/flutter_module/.android/include_flutter.groovy'
+))
 include ':flutterpatch'
 
 
 
 
 
-setBinding(new Binding([gradle: this]))
-evaluate(new File(settingsDir.parentFile, 'build/flutterhotfixmodule/.android/include_flutter.groovy'))
-
-include ':flutterhotfixmodule'
+include ':flutter_module'
