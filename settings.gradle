@@ -7,6 +7,6 @@ include ':flutterpatch'
 
 
 setBinding(new Binding([gradle: this]))
-evaluate(new File(settingsDir.parentFile, '/build/FlutterPatch/flutterhotfixmodule/.android/include_flutter.groovy'))
+evaluate(new File(settingsDir.parentFile, '/flutterhotfixmodule/.android/include_flutter.groovy'))
 
 include ':flutterhotfixmodule'
