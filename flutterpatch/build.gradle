@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.0"
 
     defaultConfig {
         minSdkVersion 19
@@ -33,8 +32,8 @@ dependencies {
 
     // 指定tinker依赖版本（注：应用升级1.3.5版本起，不再内置tinker）
     compileOnly 'com.tencent.tinker:tinker-android-lib:1.9.14.6'
-    compileOnly project(':flutter')
-
+    compileOnly project(':Flutter')
+//    implementation files('libs/libs.jar')
 //    compileOnly project(':flutter_boost')
 }
 
