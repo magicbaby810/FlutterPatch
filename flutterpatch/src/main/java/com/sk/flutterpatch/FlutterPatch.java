@@ -186,31 +186,61 @@ public class FlutterPatch {
 
     /**
      * 获取最优abi
+     * 先判断ndk是否配置了，未配置情况还按最优走
+     *
+     *
+     * 当单独配置一个abi时，按此abi处理
+     * 配置多个abi，先查最优abi是否在里面，在就用最优，
+     * 不在里面用随机（此处随机是指读取的ndk配置是无序的，所以就是取第一个也不一定是build.gradle里配置的第一个）一个配置
      *
      * @return
      */
     public static String getCpuABI(String abis) {
+        TinkerLog.i(TAG, "all ndk config >> " + abis);
+        String abi = "";
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            for (String cpu : Build.SUPPORTED_ABIS) {
+                if (!TextUtils.isEmpty(cpu)) {
+                    abi = cpu;
+                    break;
+                }
+            }
+        } else {
+            abi = Build.CPU_ABI;
+        }
+
 
         if (TextUtils.isEmpty(abis)) {
-
-            if (Build.VERSION.SDK_INT >= 21) {
-                for (String cpu : Build.SUPPORTED_ABIS) {
-                    if (!TextUtils.isEmpty(cpu)) {
-                        TinkerLog.i(TAG, "cpu abi is:" + cpu);
-                        return cpu;
-                    }
-                }
-            } else {
-                TinkerLog.i(TAG, "cpu abi is:" + Build.CPU_ABI);
-                return Build.CPU_ABI;
-            }
+            TinkerLog.i(TAG, "cpu abi is:" + abi);
+            return abi;
         } else {
 
             String[] abiStrs = abis.split(",");
-            if (abiStrs.length > 0) {
 
-                TinkerLog.i(TAG, "cpu abi is:" + abiStrs[0] + " all ndk config >> " + abis);
-                return abiStrs[0];
+            if (abiStrs.length > 0) {
+                // 只有一个直接取，多个先看是否有最优abi，有就用，没有就取第一个
+                 if (abiStrs.length == 1) {
+
+                    abi = abiStrs[0];
+
+                    TinkerLog.i(TAG, "cpu abi is:" + abi + " from ndk config");
+                    return abi;
+
+                 } else {
+
+                     for (String abiStr : abiStrs) {
+                         if (abiStr.equals(abi)) {
+
+                             TinkerLog.i(TAG, "cpu abi is:" + abi);
+                             return abi;
+                         }
+                     }
+                     abi = abiStrs[0];
+
+                     TinkerLog.i(TAG, "cpu abi is:" + abi + " from ndk config");
+                     return abi;
+                 }
             }
         }
         return "";
