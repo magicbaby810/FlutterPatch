@@ -8,4 +8,5 @@ evaluate(new File(
 
 include ':flutterpatch'
 include ':flutter_test_module'
+project(':flutter_test_module').projectDir = new File('../flutter_test_module')
 
