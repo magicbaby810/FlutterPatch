@@ -7,3 +7,5 @@ evaluate(new File(
 ))
 
 include ':flutterpatch'
+include ':flutter_test_module'
+
