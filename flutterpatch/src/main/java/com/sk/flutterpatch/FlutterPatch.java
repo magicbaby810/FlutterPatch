@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.tinker.TinkerLoadResult;
+import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
 import com.tencent.tinker.loader.shareutil.SharePatchFileUtil;
 
@@ -34,28 +35,10 @@ public class FlutterPatch {
     private FlutterPatch() {
     }
 
-    public static String getLibPath(Context context) {
-
-        String libPath = "";
-
-        if (Build.VERSION.SDK_INT >= 21) {
-
-            for (String cpuABI : Build.SUPPORTED_ABIS) {
-                if (!TextUtils.isEmpty(cpuABI)) {
-
-                    libPath = findLibraryFromTinker(context, "lib" + File.separator + cpuABI, "libapp.so");
-                    if (!TextUtils.isEmpty(libPath) && !libPath.equals("libapp.so")) {
-                        TinkerLog.i(TAG, "cpu abi is:" + cpuABI);
-                        break;
-                    }
-                }
-            }
-        } else {
-
-            libPath = findLibraryFromTinker(context, "lib" + File.separator + Build.CPU_ABI, "libapp.so");
-            if (!TextUtils.isEmpty(libPath) && !libPath.equals("libapp.so")) {
-                TinkerLog.i(TAG, "cpu abi is:" + Build.CPU_ABI);
-            }
+    public static String getLibPath(Context context, String abis) {
+        String libPath = findLibraryFromTinker(context, "lib" + File.separator + getCpuABI(abis), "libapp.so");
+        if (!TextUtils.isEmpty(libPath) && libPath.equals("libapp.so")) {
+            return null;
         }
         return libPath;
     }
@@ -92,16 +75,19 @@ public class FlutterPatch {
      * Tinker和Sophix都集成这种情况是不可能发生的吧？
      *
      * @param obj
+     * @param abis 从gradle里的ndk读取配置
+     *
      */
-    public static void hook(Object obj) {
+    public static void hook(Object obj, Object abis) {
         if (obj instanceof Context) {
 
             Context context = (Context) obj;
+            String abisStr = String.valueOf(abis);
             TinkerLog.i(TAG, "find FlutterMain");
 
             if (isUseTinker) {
 
-                String libPathFromTinker = getLibPath(context);
+                String libPathFromTinker = getLibPath(context, abisStr);
                 if (!TextUtils.isEmpty(libPathFromTinker)) {
                     reflect(libPathFromTinker);
                 }
@@ -198,4 +184,35 @@ public class FlutterPatch {
         return libName;
     }
 
+    /**
+     * 获取最优abi
+     *
+     * @return
+     */
+    public static String getCpuABI(String abis) {
+
+        if (TextUtils.isEmpty(abis)) {
+
+            if (Build.VERSION.SDK_INT >= 21) {
+                for (String cpu : Build.SUPPORTED_ABIS) {
+                    if (!TextUtils.isEmpty(cpu)) {
+                        TinkerLog.i(TAG, "cpu abi is:" + cpu);
+                        return cpu;
+                    }
+                }
+            } else {
+                TinkerLog.i(TAG, "cpu abi is:" + Build.CPU_ABI);
+                return Build.CPU_ABI;
+            }
+        } else {
+
+            String[] abiStrs = abis.split(",");
+            if (abiStrs.length > 0) {
+
+                TinkerLog.i(TAG, "cpu abi is:" + abiStrs[0] + " all ndk config >> " + abis);
+                return abiStrs[0];
+            }
+        }
+        return "";
+    }
 }
